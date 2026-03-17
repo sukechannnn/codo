@@ -8,6 +8,7 @@ import {
   createEmptyQueue,
 } from "../../models/queue.js";
 import type { Task } from "../../models/task.js";
+import type { History } from "../../models/history.js";
 import {
   readQueue,
   readHistory,
@@ -16,6 +17,7 @@ import {
 } from "../../store/fileStore.js";
 import {
   addHistoryEntry,
+  createEmptyHistory,
   type HistoryEntry,
 } from "../../models/history.js";
 import { customAlphabet } from "nanoid";
@@ -24,10 +26,12 @@ const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 8);
 
 export function useQueue() {
   const [queue, setQueue] = useState<Queue>(createEmptyQueue());
+  const [history, setHistory] = useState<History>(createEmptyHistory());
 
   const reload = useCallback(async () => {
-    const q = await readQueue();
+    const [q, h] = await Promise.all([readQueue(), readHistory()]);
     setQueue(q);
+    setHistory(h);
   }, []);
 
   useEffect(() => {
@@ -104,5 +108,5 @@ export function useQueue() {
     [reload],
   );
 
-  return { queue, reload, add, remove, move, edit };
+  return { queue, history, reload, add, remove, move, edit };
 }

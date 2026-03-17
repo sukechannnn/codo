@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { Box, Text, useApp, useInput } from "ink";
 import { useQueue } from "./hooks/useQueue.js";
 import { useEditor } from "./hooks/useEditor.js";
@@ -7,17 +7,13 @@ import { TaskList } from "./TaskList.js";
 import { TaskDetail } from "./TaskDetail.js";
 import { TaskForm } from "./TaskForm.js";
 import { HistoryView } from "./HistoryView.js";
-import { readHistory } from "../store/fileStore.js";
-import type { History } from "../models/history.js";
-import { createEmptyHistory } from "../models/history.js";
 
 type Mode = "list" | "add" | "edit" | "detail" | "confirm-delete" | "history";
 
 export function App() {
   const [mode, setMode] = useState<Mode>("list");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [history, setHistory] = useState<History>(createEmptyHistory());
-  const { queue, add, remove, move, edit, reload } = useQueue();
+  const { queue, history, add, remove, move, edit } = useQueue();
   const { openEditor } = useEditor();
   const { exit } = useApp();
 
@@ -28,6 +24,8 @@ export function App() {
     (index: number) => Math.max(0, Math.min(index, queue.tasks.length - 1)),
     [queue.tasks.length],
   );
+
+  const recentHistory = history.entries.slice(0, 3);
 
   useInput(
     (input, key) => {
@@ -94,10 +92,7 @@ export function App() {
 
       // History
       if (input === "h") {
-        readHistory().then((h) => {
-          setHistory(h);
-          setMode("history");
-        });
+        setMode("history");
         return;
       }
     },
@@ -159,7 +154,11 @@ export function App() {
         />
       ) : (
         <>
-          <TaskList tasks={queue.tasks} selectedIndex={selectedIndex} />
+          <TaskList
+            tasks={queue.tasks}
+            selectedIndex={selectedIndex}
+            recentHistory={recentHistory}
+          />
           {mode === "confirm-delete" && selectedTask && (
             <Box paddingX={1}>
               <Text color="red">
