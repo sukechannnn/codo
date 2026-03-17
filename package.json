@@ -1,7 +1,19 @@
 {
-  "name": "cc-todo",
+  "name": "codo",
   "version": "0.1.0",
+  "description": "Task queue manager for Claude Code - CLI, TUI, and CC skill",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sukechannnn/codo.git"
+  },
+  "keywords": [
+    "claude-code",
+    "task-queue",
+    "tui",
+    "cli"
+  ],
   "bin": {
     "codo": "./dist/cli.js"
   },
@@ -14,17 +26,21 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "start": "node dist/cli.js",
+    "prepublishOnly": "npm run build",
     "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
     "chalk": "^5.4.0",
     "commander": "^13.1.0",
+    "ink": "^5.2.1",
     "nanoid": "^5.1.7",
     "proper-lockfile": "^4.1.2",
+    "react": "^18.3.1",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/proper-lockfile": "^4.1.4",
+    "@types/react": "^18.3.28",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0"
   }

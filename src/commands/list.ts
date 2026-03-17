@@ -1,8 +1,8 @@
 import chalk from "chalk";
-import { readQueue, type QueueScope } from "../store/fileStore.js";
+import { readQueue } from "../store/fileStore.js";
 
-export async function listCommand(scope: QueueScope): Promise<void> {
-  const queue = await readQueue(scope);
+export async function listCommand(): Promise<void> {
+  const queue = await readQueue();
 
   if (queue.tasks.length === 0) {
     console.log(chalk.dim("Queue is empty"));

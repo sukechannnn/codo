@@ -1,13 +1,13 @@
 import chalk from "chalk";
 import { findTask, moveTask, removeTask } from "../models/queue.js";
-import { withLock, type QueueScope } from "../store/fileStore.js";
+import { addHistoryEntry, type HistoryEntry } from "../models/history.js";
+import { withLock, readHistory, writeHistory } from "../store/fileStore.js";
 
 export async function moveCommand(
   taskId: string,
   to: number,
-  scope: QueueScope,
 ): Promise<void> {
-  await withLock(scope, async (queue) => {
+  await withLock(async (queue) => {
     const task = findTask(queue, taskId);
     if (!task) {
       console.error(chalk.red(`Task not found: ${taskId}`));
@@ -20,18 +20,26 @@ export async function moveCommand(
   console.log(chalk.green("Moved:"), taskId, `-> position ${to}`);
 }
 
-export async function rmCommand(
-  taskId: string,
-  scope: QueueScope,
-): Promise<void> {
-  await withLock(scope, async (queue) => {
-    const task = findTask(queue, taskId);
-    if (!task) {
+export async function rmCommand(taskId: string): Promise<void> {
+  const task = await withLock(async (queue) => {
+    const found = findTask(queue, taskId);
+    if (!found) {
       console.error(chalk.red(`Task not found: ${taskId}`));
       process.exit(1);
     }
-    return { queue: removeTask(queue, taskId), result: undefined };
+    return { queue: removeTask(queue, taskId), result: found };
   });
+
+  const entry: HistoryEntry = {
+    id: task.id,
+    instruction: task.instruction,
+    cwd: task.cwd,
+    result: "removed",
+    createdAt: task.createdAt,
+    completedAt: new Date().toISOString(),
+  };
+  const history = await readHistory();
+  await writeHistory(addHistoryEntry(history, entry));
 
   console.log(chalk.green("Removed:"), taskId);
 }

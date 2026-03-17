@@ -27,4 +27,4 @@ try {
 }
 
 fs.symlinkSync(skillSrc, skillDest, "dir");
-console.log(`cc-todo: Skill installed -> ${skillDest}`);
+console.log(`codo: Skill installed -> ${skillDest}`);

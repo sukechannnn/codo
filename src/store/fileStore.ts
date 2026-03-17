@@ -3,13 +3,15 @@ import path from "node:path";
 import os from "node:os";
 import lockfile from "proper-lockfile";
 import { QueueSchema, createEmptyQueue, type Queue } from "../models/queue.js";
+import {
+  HistorySchema,
+  createEmptyHistory,
+  type History,
+} from "../models/history.js";
 
-const GLOBAL_DIR = path.join(os.homedir(), ".cc-todo");
+const GLOBAL_DIR = path.join(os.homedir(), ".codo");
 const GLOBAL_QUEUE_FILE = path.join(GLOBAL_DIR, "queue.json");
-const LOCAL_DIR = ".cc-todo";
-const LOCAL_QUEUE_FILE = path.join(LOCAL_DIR, "queue.json");
-
-export type QueueScope = "global" | "project";
+const GLOBAL_HISTORY_FILE = path.join(GLOBAL_DIR, "history.json");
 
 async function fileExists(filePath: string): Promise<boolean> {
   try {
@@ -20,59 +22,66 @@ async function fileExists(filePath: string): Promise<boolean> {
   }
 }
 
-export async function resolveScope(): Promise<QueueScope> {
-  return (await fileExists(LOCAL_QUEUE_FILE)) ? "project" : "global";
+export function getQueuePath(): string {
+  return GLOBAL_QUEUE_FILE;
 }
 
-function getQueuePath(scope: QueueScope): string {
-  return scope === "global" ? GLOBAL_QUEUE_FILE : LOCAL_QUEUE_FILE;
+async function ensureDir(): Promise<void> {
+  await fs.mkdir(GLOBAL_DIR, { recursive: true });
 }
 
-function getDirPath(scope: QueueScope): string {
-  return scope === "global" ? GLOBAL_DIR : LOCAL_DIR;
-}
-
-async function ensureDir(scope: QueueScope): Promise<void> {
-  await fs.mkdir(getDirPath(scope), { recursive: true });
-}
-
-async function ensureQueueFile(scope: QueueScope): Promise<void> {
-  const filePath = getQueuePath(scope);
-  await ensureDir(scope);
+async function ensureQueueFile(): Promise<void> {
+  const filePath = GLOBAL_QUEUE_FILE;
+  await ensureDir();
   if (!(await fileExists(filePath))) {
     await fs.writeFile(filePath, JSON.stringify(createEmptyQueue(), null, 2));
   }
 }
 
-export async function readQueue(scope: QueueScope): Promise<Queue> {
-  await ensureQueueFile(scope);
-  const filePath = getQueuePath(scope);
-  const content = await fs.readFile(filePath, "utf-8");
+export async function readQueue(): Promise<Queue> {
+  await ensureQueueFile();
+  const content = await fs.readFile(GLOBAL_QUEUE_FILE, "utf-8");
   return QueueSchema.parse(JSON.parse(content));
 }
 
-export async function writeQueue(
-  queue: Queue,
-  scope: QueueScope,
-): Promise<void> {
-  await ensureQueueFile(scope);
-  const filePath = getQueuePath(scope);
-  await fs.writeFile(filePath, JSON.stringify(queue, null, 2) + "\n");
+export async function writeQueue(queue: Queue): Promise<void> {
+  await ensureQueueFile();
+  await fs.writeFile(GLOBAL_QUEUE_FILE, JSON.stringify(queue, null, 2) + "\n");
+}
+
+export function getHistoryPath(): string {
+  return GLOBAL_HISTORY_FILE;
+}
+
+export async function readHistory(): Promise<History> {
+  await ensureDir();
+  try {
+    const content = await fs.readFile(GLOBAL_HISTORY_FILE, "utf-8");
+    return HistorySchema.parse(JSON.parse(content));
+  } catch {
+    return createEmptyHistory();
+  }
+}
+
+export async function writeHistory(history: History): Promise<void> {
+  await ensureDir();
+  await fs.writeFile(
+    GLOBAL_HISTORY_FILE,
+    JSON.stringify(history, null, 2) + "\n",
+  );
 }
 
 export async function withLock<T>(
-  scope: QueueScope,
   fn: (queue: Queue) => Promise<{ queue: Queue; result: T }>,
 ): Promise<T> {
-  await ensureQueueFile(scope);
-  const filePath = getQueuePath(scope);
-  const release = await lockfile.lock(filePath, {
+  await ensureQueueFile();
+  const release = await lockfile.lock(GLOBAL_QUEUE_FILE, {
     retries: { retries: 3, minTimeout: 100, maxTimeout: 1000 },
   });
   try {
-    const queue = await readQueue(scope);
+    const queue = await readQueue();
     const { queue: newQueue, result } = await fn(queue);
-    await writeQueue(newQueue, scope);
+    await writeQueue(newQueue);
     return result;
   } finally {
     await release();
