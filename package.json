@@ -1,5 +1,5 @@
 {
-  "name": "codo",
+  "name": "@sukechannnn/codo",
   "version": "0.1.0",
   "description": "Task queue manager for Claude Code - CLI, TUI, and CC skill",
   "type": "module",
@@ -39,6 +39,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
     "@types/proper-lockfile": "^4.1.4",
     "@types/react": "^18.3.28",
     "tsup": "^8.3.0",
