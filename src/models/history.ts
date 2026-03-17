@@ -15,13 +15,20 @@ export const HistorySchema = z.object({
 });
 export type History = z.infer<typeof HistorySchema>;
 
-const MAX_ENTRIES = 100;
+const MAX_ENTRIES_PER_CWD = 100;
 
 export function createEmptyHistory(): History {
   return { entries: [] };
 }
 
 export function addHistoryEntry(history: History, entry: HistoryEntry): History {
-  const entries = [entry, ...history.entries].slice(0, MAX_ENTRIES);
+  const newEntries = [entry, ...history.entries];
+  const countByCwd = new Map<string, number>();
+  const entries = newEntries.filter((e) => {
+    const count = countByCwd.get(e.cwd) ?? 0;
+    if (count >= MAX_ENTRIES_PER_CWD) return false;
+    countByCwd.set(e.cwd, count + 1);
+    return true;
+  });
   return { entries };
 }
