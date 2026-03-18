@@ -1,9 +1,9 @@
 ---
 name: codo
 description: >
-  タスクキューから次のタスクを取得して実行する。
-  現在のタスクが完了したら自動で次のタスクに進む。
-  codo CLI がインストールされている前提。
+  Pick up the next task from the queue and execute it.
+  Automatically move on to the next task when the current one is done.
+  Requires codo CLI to be installed.
 allowed-tools:
   - Bash
   - Read
