@@ -28,15 +28,22 @@ export function useQueue() {
   const [queue, setQueue] = useState<Queue>(createEmptyQueue());
   const [history, setHistory] = useState<History>(createEmptyHistory());
 
+  const cwd = process.cwd();
+
   const reload = useCallback(async () => {
     const [q, h] = await Promise.all([readQueue(), readHistory()]);
-    setQueue(q);
-    setHistory(h);
-  }, []);
+    setQueue({
+      ...q,
+      tasks: q.tasks.filter((t) => t.cwd === cwd),
+    });
+    setHistory({
+      entries: h.entries.filter((e) => e.cwd === cwd),
+    });
+  }, [cwd]);
 
   useEffect(() => {
     reload();
-    const interval = setInterval(reload, 2000);
+    const interval = setInterval(reload, 1000);
     return () => clearInterval(interval);
   }, [reload]);
 
@@ -83,13 +90,21 @@ export function useQueue() {
 
   const move = useCallback(
     async (taskId: string, toIndex: number) => {
-      await withLock(async (q) => ({
-        queue: moveTask(q, taskId, toIndex),
-        result: undefined,
-      }));
+      await withLock(async (q) => {
+        // Convert cwd-filtered index to global index
+        const cwdTasks = q.tasks.filter((t) => t.cwd === cwd);
+        const targetTask = cwdTasks[toIndex];
+        const globalIndex = targetTask
+          ? q.tasks.indexOf(targetTask)
+          : q.tasks.length - 1;
+        return {
+          queue: moveTask(q, taskId, globalIndex),
+          result: undefined,
+        };
+      });
       await reload();
     },
-    [reload],
+    [reload, cwd],
   );
 
   const edit = useCallback(

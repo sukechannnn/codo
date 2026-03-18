@@ -3,11 +3,15 @@ import { getNextPendingTask, updateTaskStatus } from "../models/queue.js";
 import { withLock } from "../store/fileStore.js";
 import type { Task } from "../models/task.js";
 
-const POLL_INTERVAL_MS = 10_000;
+const POLL_INTERVAL_MS = 1_000;
+
+const cwd = process.cwd();
 
 async function tryNext(): Promise<Task | null> {
   return withLock(async (queue) => {
-    const next = getNextPendingTask(queue);
+    const next = queue.tasks.find(
+      (t) => t.status === "pending" && t.cwd === cwd,
+    );
     if (!next) {
       return { queue, result: null as Task | null };
     }
