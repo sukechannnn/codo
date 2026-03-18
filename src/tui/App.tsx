@@ -179,7 +179,7 @@ export function App() {
       />
       <Box paddingX={1}>
         <Text dimColor>
-          [a]dd [e]dit [d]el [K/J]move [Enter]expand [h]istory [A/E]$EDITOR [q]uit
+          [a]dd [e]dit [d]el [K/J]move [Enter]select [h]istory [A/E]$EDITOR [q]uit
         </Text>
       </Box>
     </Box>

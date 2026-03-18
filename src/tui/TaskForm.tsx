@@ -39,6 +39,37 @@ export function TaskForm({ mode, initialValue = "", onSubmit, onCancel }: Props)
       }
       return;
     }
+    // Ctrl+A: move cursor to start
+    if (key.ctrl && input === "a") {
+      setCursor(0);
+      return;
+    }
+    // Ctrl+E: move cursor to end
+    if (key.ctrl && input === "e") {
+      setCursor(value.length);
+      return;
+    }
+    // Ctrl+W: delete word before cursor
+    if (key.ctrl && input === "w") {
+      const before = value.slice(0, cursor);
+      const trimmed = before.replace(/\s+$/, "");
+      const lastSpace = trimmed.lastIndexOf(" ");
+      const newCursor = lastSpace === -1 ? 0 : lastSpace + 1;
+      setValue(value.slice(0, newCursor) + value.slice(cursor));
+      setCursor(newCursor);
+      return;
+    }
+    // Ctrl+U: delete from cursor to start
+    if (key.ctrl && input === "u") {
+      setValue(value.slice(cursor));
+      setCursor(0);
+      return;
+    }
+    // Ctrl+K: delete from cursor to end
+    if (key.ctrl && input === "k") {
+      setValue(value.slice(0, cursor));
+      return;
+    }
     if (input && !key.ctrl && !key.meta) {
       setValue((v) => v.slice(0, cursor) + input + v.slice(cursor));
       setCursor((c) => c + input.length);
