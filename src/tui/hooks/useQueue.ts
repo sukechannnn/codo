@@ -24,28 +24,41 @@ import { customAlphabet } from "nanoid";
 
 const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 8);
 
-export function useQueue() {
+export function useQueue(polling = true) {
   const [queue, setQueue] = useState<Queue>(createEmptyQueue());
   const [history, setHistory] = useState<History>(createEmptyHistory());
 
   const cwd = process.cwd();
 
+  const prevJsonRef = useRef({ queue: "", history: "" });
+
   const reload = useCallback(async () => {
     const [q, h] = await Promise.all([readQueue(), readHistory()]);
-    setQueue({
+    const filteredQueue = {
       ...q,
       tasks: q.tasks.filter((t) => t.cwd === cwd),
-    });
-    setHistory({
+    };
+    const filteredHistory = {
       entries: h.entries.filter((e) => e.cwd === cwd),
-    });
+    };
+    const qJson = JSON.stringify(filteredQueue);
+    const hJson = JSON.stringify(filteredHistory);
+    if (qJson !== prevJsonRef.current.queue) {
+      prevJsonRef.current.queue = qJson;
+      setQueue(filteredQueue);
+    }
+    if (hJson !== prevJsonRef.current.history) {
+      prevJsonRef.current.history = hJson;
+      setHistory(filteredHistory);
+    }
   }, [cwd]);
 
   useEffect(() => {
     reload();
+    if (!polling) return;
     const interval = setInterval(reload, 1000);
     return () => clearInterval(interval);
-  }, [reload]);
+  }, [reload, polling]);
 
   const add = useCallback(
     async (instruction: string) => {

@@ -7,9 +7,30 @@ interface Props {
   tasks: Task[];
   selectedIndex: number;
   recentHistory: HistoryEntry[];
+  maxRows: number;
 }
 
-export function TaskList({ tasks, selectedIndex, recentHistory }: Props) {
+export const TaskList = React.memo(function TaskList({ tasks, selectedIndex, recentHistory, maxRows }: Props) {
+  // Calculate how many rows the recent history section uses
+  const recentRows = recentHistory.length > 0 ? recentHistory.length + 2 : 0; // header + entries + separator
+  // header(1) + separator(1) = 2 for task list header
+  const taskHeaderRows = tasks.length > 0 ? 2 : 1;
+  const availableForTasks = maxRows - recentRows - taskHeaderRows;
+
+  // Window the visible tasks around the selected index
+  let visibleStart = 0;
+  let visibleEnd = tasks.length;
+  if (tasks.length > availableForTasks) {
+    const half = Math.floor(availableForTasks / 2);
+    visibleStart = Math.max(0, selectedIndex - half);
+    visibleEnd = visibleStart + availableForTasks;
+    if (visibleEnd > tasks.length) {
+      visibleEnd = tasks.length;
+      visibleStart = Math.max(0, visibleEnd - availableForTasks);
+    }
+  }
+  const visibleTasks = tasks.slice(visibleStart, visibleEnd);
+
   return (
     <Box flexDirection="column" paddingX={1}>
       {recentHistory.length > 0 && (
@@ -45,7 +66,8 @@ export function TaskList({ tasks, selectedIndex, recentHistory }: Props) {
             </Text>
           </Box>
           <Text dimColor>{"     " + "─".repeat(60)}</Text>
-          {tasks.map((task, i) => {
+          {visibleTasks.map((task, vi) => {
+            const i = visibleStart + vi;
             const selected = i === selectedIndex;
             const marker = selected ? "▸ " : "  ";
             const num = String(i + 1).padStart(2);
@@ -77,4 +99,4 @@ export function TaskList({ tasks, selectedIndex, recentHistory }: Props) {
       )}
     </Box>
   );
-}
+});

@@ -4,6 +4,7 @@ import type { History, HistoryEntry } from "../models/history.js";
 
 interface Props {
   history: History;
+  maxRows: number;
   onClose: () => void;
 }
 
@@ -50,10 +51,12 @@ function HistoryDetail({ entry, onClose }: { entry: HistoryEntry; onClose: () =>
   );
 }
 
-export function HistoryView({ history, onClose }: Props) {
+export const HistoryView = React.memo(function HistoryView({ history, maxRows, onClose }: Props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showDetail, setShowDetail] = useState(false);
   const entries = history.entries;
+  // header(1) + margin(1) + column header(1) + separator(1) = 4
+  const maxVisible = maxRows - 4;
 
   useInput(
     (_input, key) => {
@@ -106,7 +109,20 @@ export function HistoryView({ history, onClose }: Props) {
         </Text>
       </Box>
       <Text dimColor>{"     " + "─".repeat(60)}</Text>
-      {entries.map((entry, i) => {
+      {(() => {
+        let start = 0;
+        let end = entries.length;
+        if (entries.length > maxVisible) {
+          const half = Math.floor(maxVisible / 2);
+          start = Math.max(0, selectedIndex - half);
+          end = start + maxVisible;
+          if (end > entries.length) {
+            end = entries.length;
+            start = Math.max(0, end - maxVisible);
+          }
+        }
+        return entries.slice(start, end).map((entry, vi) => {
+        const i = start + vi;
         const selected = i === selectedIndex;
         const marker = selected ? "▸ " : "  ";
         const resultLabel =
@@ -131,7 +147,8 @@ export function HistoryView({ history, onClose }: Props) {
             </Text>
           </Box>
         );
-      })}
+      });
+      })()}
     </Box>
   );
-}
+});

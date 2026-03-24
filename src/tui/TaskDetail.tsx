@@ -7,7 +7,7 @@ interface Props {
   onClose: () => void;
 }
 
-export function TaskDetail({ task, onClose }: Props) {
+export const TaskDetail = React.memo(function TaskDetail({ task, onClose }: Props) {
   useInput((_input, key) => {
     if (key.return || key.escape) {
       onClose();
@@ -43,4 +43,4 @@ export function TaskDetail({ task, onClose }: Props) {
       </Box>
     </Box>
   );
-}
+});

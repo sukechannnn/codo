@@ -13,9 +13,12 @@ type Mode = "list" | "add" | "edit" | "detail" | "confirm-delete" | "history";
 export function App() {
   const [mode, setMode] = useState<Mode>("list");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const { queue, history, add, remove, move, edit } = useQueue();
+  const polling = mode !== "add" && mode !== "edit";
+  const { queue, history, add, remove, move, edit } = useQueue(polling);
   const { openEditor } = useEditor();
   const { exit } = useApp();
+  // border(2) + statusBar(1) + separator(1) + separator(1) + helpBar(1) = 6
+  const maxContentRows = (process.stdout.rows ?? 24) - 6;
 
   const selectedTask =
     queue.tasks.length > 0 ? queue.tasks[selectedIndex] : undefined;
@@ -25,8 +28,7 @@ export function App() {
     [queue.tasks.length],
   );
 
-  const recentHistory = history.entries.slice(0, 3);
-
+  const recentHistory = history.entries.slice(0, 3).reverse();
   useInput(
     (input, key) => {
       if (mode !== "list") return;
@@ -129,7 +131,7 @@ export function App() {
       />
 
       {mode === "history" ? (
-        <HistoryView history={history} onClose={() => setMode("list")} />
+        <HistoryView history={history} maxRows={maxContentRows} onClose={() => setMode("list")} />
       ) : mode === "detail" && selectedTask ? (
         <TaskDetail task={selectedTask} onClose={() => setMode("list")} />
       ) : mode === "add" ? (
@@ -158,6 +160,7 @@ export function App() {
             tasks={queue.tasks}
             selectedIndex={selectedIndex}
             recentHistory={recentHistory}
+            maxRows={maxContentRows}
           />
           {mode === "confirm-delete" && selectedTask && (
             <Box paddingX={1}>

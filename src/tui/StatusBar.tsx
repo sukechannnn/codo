@@ -6,7 +6,7 @@ interface Props {
   queue: Queue;
 }
 
-export function StatusBar({ queue }: Props) {
+export const StatusBar = React.memo(function StatusBar({ queue }: Props) {
   const pending = queue.tasks.filter((t) => t.status === "pending").length;
   const running = queue.tasks.filter((t) => t.status === "in_progress").length;
 
@@ -24,4 +24,4 @@ export function StatusBar({ queue }: Props) {
       </Text>
     </Box>
   );
-}
+});

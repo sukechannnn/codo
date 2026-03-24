@@ -5,7 +5,25 @@ import { nextCommand } from "./commands/next.js";
 import { doneCommand, failCommand } from "./commands/done.js";
 import { moveCommand, rmCommand } from "./commands/move.js";
 
+// DEC Mode 2026: Synchronized Output
+// Wraps terminal writes so updates appear atomically (no flicker)
+const BSM = "\x1b[?2026h"; // Begin Synchronized Mode
+const ESM = "\x1b[?2026l"; // End Synchronized Mode
+
+function enableSyncedOutput() {
+  const originalWrite = process.stdout.write.bind(process.stdout) as typeof process.stdout.write;
+  process.stdout.write = function (
+    ...args: Parameters<typeof process.stdout.write>
+  ): boolean {
+    originalWrite(BSM);
+    const result = originalWrite(...args);
+    originalWrite(ESM);
+    return result;
+  } as typeof process.stdout.write;
+}
+
 async function launchTui() {
+  enableSyncedOutput();
   const { render } = await import("ink");
   const { createElement } = await import("react");
   const { App } = await import("./tui/App.js");
