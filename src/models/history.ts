@@ -22,7 +22,9 @@ export function createEmptyHistory(): History {
 }
 
 export function addHistoryEntry(history: History, entry: HistoryEntry): History {
-  const newEntries = [entry, ...history.entries];
+  const newEntries = [entry, ...history.entries].sort(
+    (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime(),
+  );
   const countByCwd = new Map<string, number>();
   const entries = newEntries.filter((e) => {
     const count = countByCwd.get(e.cwd) ?? 0;
