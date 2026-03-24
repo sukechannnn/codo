@@ -3,28 +3,32 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
-const skillSrc = path.resolve(
+const skillsBase = path.resolve(
   new URL(".", import.meta.url).pathname,
   "..",
   "skills",
-  "codo",
 );
-const skillDest = path.join(os.homedir(), ".claude", "skills", "codo");
+const destBase = path.join(os.homedir(), ".claude", "skills");
 
 // Create ~/.claude/skills/ if it doesn't exist
-fs.mkdirSync(path.dirname(skillDest), { recursive: true });
+fs.mkdirSync(destBase, { recursive: true });
 
-// Remove existing symlink or directory
-try {
-  const stat = fs.lstatSync(skillDest);
-  if (stat.isSymbolicLink()) {
-    fs.unlinkSync(skillDest);
-  } else if (stat.isDirectory()) {
-    fs.rmSync(skillDest, { recursive: true });
+for (const name of ["codo", "codo-pop"]) {
+  const src = path.join(skillsBase, name);
+  const dest = path.join(destBase, name);
+
+  // Remove existing symlink or directory
+  try {
+    const stat = fs.lstatSync(dest);
+    if (stat.isSymbolicLink()) {
+      fs.unlinkSync(dest);
+    } else if (stat.isDirectory()) {
+      fs.rmSync(dest, { recursive: true });
+    }
+  } catch {
+    // Does not exist, ignore
   }
-} catch {
-  // Does not exist, ignore
-}
 
-fs.symlinkSync(skillSrc, skillDest, "dir");
-console.log(`codo: Skill installed -> ${skillDest}`);
+  fs.symlinkSync(src, dest, "dir");
+  console.log(`codo: Skill installed -> ${dest}`);
+}
