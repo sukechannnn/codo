@@ -51,8 +51,9 @@ program
 program
   .command("list")
   .description("List all tasks")
-  .action(async () => {
-    await listCommand();
+  .option("--json", "Output as JSON")
+  .action(async (opts) => {
+    await listCommand({ json: opts.json });
   });
 
 program

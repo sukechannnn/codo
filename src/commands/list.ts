@@ -1,10 +1,15 @@
 import chalk from "chalk";
 import { readQueue } from "../store/fileStore.js";
 
-export async function listCommand(): Promise<void> {
+export async function listCommand(options: { json?: boolean } = {}): Promise<void> {
   const raw = await readQueue();
   const cwd = process.cwd();
   const queue = { ...raw, tasks: raw.tasks.filter((t) => t.cwd === cwd) };
+
+  if (options.json) {
+    console.log(JSON.stringify(queue.tasks, null, 2));
+    return;
+  }
 
   if (queue.tasks.length === 0) {
     console.log(chalk.dim("Queue is empty"));
