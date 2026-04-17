@@ -1,8 +1,9 @@
 ---
 name: codo-pop
 description: >
-  Pick up one task from the queue and execute it, then stop.
-  Does not automatically continue to the next task.
+  Pick up tasks from the queue and execute them, then stop.
+  Accepts an optional count argument (e.g. /codo-pop 3).
+  Defaults to 1 task if no argument is given.
   Requires codo CLI to be installed.
 allowed-tools:
   - Bash
@@ -12,7 +13,9 @@ allowed-tools:
   - Glob
 ---
 
-# タスクを1つだけ実行するスキル
+# タスクを指定数だけ実行するスキル
+
+引数 `$ARGUMENTS` が指定されていればその数だけ、未指定なら1つだけタスクを実行する。
 
 ## 基本フロー
 
@@ -21,7 +24,8 @@ allowed-tools:
 3. 出力された `instruction` に従って作業を実行する
 4. 作業完了後、`codo done <task-id>` を実行する（キューから削除される）
 5. 作業が失敗した場合は `codo fail <task-id>` を実行する（pending に戻る）
-6. 完了を報告して終了する（次のタスクには進まない）
+6. 実行したタスク数が指定数に達したら完了を報告して終了する
+7. 達していなければ手順1に戻る
 
 ## 重要なルール
 
