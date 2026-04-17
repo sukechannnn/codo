@@ -13,7 +13,7 @@ const destBase = path.join(os.homedir(), ".claude", "skills");
 // Create ~/.claude/skills/ if it doesn't exist
 fs.mkdirSync(destBase, { recursive: true });
 
-for (const name of ["codo", "codo-pop"]) {
+for (const name of ["codo", "codo-pop", "codo-all"]) {
   const src = path.join(skillsBase, name);
   const dest = path.join(destBase, name);
 
