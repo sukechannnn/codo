@@ -31,7 +31,7 @@ export const TaskDetail = React.memo(function TaskDetail({ task, onClose }: Prop
       </Box>
       <Box>
         <Text dimColor>CWD: </Text>
-        <Text>{task.cwd}</Text>
+        <Text wrap="wrap">{task.cwd}</Text>
       </Box>
       <Box>
         <Text dimColor>Created: </Text>
@@ -39,7 +39,7 @@ export const TaskDetail = React.memo(function TaskDetail({ task, onClose }: Prop
       </Box>
       <Box marginTop={1} flexDirection="column">
         <Text dimColor>Instruction:</Text>
-        <Text>{task.instruction}</Text>
+        <Text wrap="wrap">{task.instruction}</Text>
       </Box>
     </Box>
   );

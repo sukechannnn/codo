@@ -33,7 +33,7 @@ function HistoryDetail({ entry, onClose }: { entry: HistoryEntry; onClose: () =>
       </Box>
       <Box>
         <Text dimColor>CWD: </Text>
-        <Text>{entry.cwd}</Text>
+        <Text wrap="wrap">{entry.cwd}</Text>
       </Box>
       <Box>
         <Text dimColor>Created: </Text>
@@ -45,7 +45,7 @@ function HistoryDetail({ entry, onClose }: { entry: HistoryEntry; onClose: () =>
       </Box>
       <Box marginTop={1} flexDirection="column">
         <Text dimColor>Instruction:</Text>
-        <Text>{entry.instruction}</Text>
+        <Text wrap="wrap">{entry.instruction}</Text>
       </Box>
     </Box>
   );
